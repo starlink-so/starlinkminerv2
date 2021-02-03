@@ -1,0 +1,30 @@
+# exclude SafeMath when calculating test coverage
+# https://eth-brownie.readthedocs.io/en/v1.10.3/config.html#exclude_paths
+
+# use Ganache's forked mainnet mode as the default network
+networks:
+  default: testheco
+
+# automatically fetch contract sources from Etherscan
+autofetch_sources: True
+
+# require OpenZepplin Contracts
+dependencies:
+  - OpenZeppelin/openzeppelin-contracts@3.2.0
+
+# path remapping to support OpenZepplin imports with NPM-style path
+compiler:
+  solc:
+    version: 0.6.12
+    remappings:
+      - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@3.2.0"
+    optimizer:
+      enabled: true
+      runs: 200
+
+reports:
+  exclude_paths:
+    - contracts/tests
+  exclude_contracts:
+    - SafeMath
+
