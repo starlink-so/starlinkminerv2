@@ -104,10 +104,8 @@ contract StarPoolsV2 is Ownable {
 
     // Add a new lp to the pool. Can only be called by the owner.
     // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
-    function add(uint256 _allocPoint, IERC20 _lpToken, uint256 _pooltype, bool _withUpdate) public onlyOwner {
-        if (_withUpdate) {
-            massUpdatePools();
-        }
+    function add(uint256 _allocPoint, IERC20 _lpToken, uint256 _pooltype) public onlyOwner {
+        massUpdatePools();
         uint256 lastRewardBlock = block.number > startBlock ? block.number : startBlock;
         totalAllocPoint = totalAllocPoint.add(_allocPoint);
         poolInfo.push(PoolInfo({
@@ -132,10 +130,8 @@ contract StarPoolsV2 is Ownable {
     }
 
     // Update the given pool's SLNToken allocation point. Can only be called by the owner.
-    function setAllocPoint(uint256 _pid, uint256 _allocPoint, bool _withUpdate) external onlyOwner {
-        if (_withUpdate) {
-            massUpdatePools();
-        }
+    function setAllocPoint(uint256 _pid, uint256 _allocPoint) external onlyOwner {
+        massUpdatePools();
         totalAllocPoint = totalAllocPoint.sub(poolInfo[_pid].allocPoint).add(_allocPoint);
         poolInfo[_pid].allocPoint = _allocPoint;
     }
@@ -221,6 +217,9 @@ contract StarPoolsV2 is Ownable {
         if (block.number <= pool.lastRewardBlock) {
             return;
         }
+        if (pool.allocPoint == 0) {
+            return;
+        }
         if (block.number > nextReductionBlock) {
             if(reductionCounter >= maxReductionCount) {
                 bonusStableBlock = nextReductionBlock;
@@ -235,7 +234,7 @@ contract StarPoolsV2 is Ownable {
         }
         uint256 blockReward = getBlocksReward(pool.lastRewardBlock, block.number);
         uint256 poolReward = blockReward.mul(pool.allocPoint).div(totalAllocPoint);
-        if(poolReward >= 0) {
+        if(poolReward > 0) {
             // 9699%% for pools =  8999/9699 for pool miner, 500/9699 for team and 200/9699 for business
             slnToken.mint(devaddr, poolReward.mul(500).div(8999));
             slnToken.mint(opeaddr, poolReward.mul(200).div(8999));
