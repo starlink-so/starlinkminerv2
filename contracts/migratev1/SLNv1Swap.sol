@@ -36,10 +36,11 @@ contract SLNv1Swap {
         value = snap.holders(_account).sub(swapAmount[_account]);
     }
 
-    function swap(address _account, uint256 _amount) external returns (uint256 value) {
+    function swap(uint256 _amount) external returns (uint256 value) {
         require(block.number > start && block.number < ending, 'not in swap time');
+        require(!isContract(msg.sender), 'not call from contract');
 
-        uint256 max_value = allowance(_account);
+        uint256 max_value = allowance(msg.sender);
         swapAmount[msg.sender] = swapAmount[msg.sender].add(_amount);
         require(swapAmount[msg.sender] <= max_value, 'not more allowance');
 
@@ -50,5 +51,16 @@ contract SLNv1Swap {
         slnV1Token.safeTransferFrom(msg.sender, address(this), _amount);
         slnV2Token.mint(msg.sender, _amount);
         value = _amount;
+    }
+
+    function isContract(address account) internal view returns (bool) {
+        // This method relies on extcodesize, which returns 0 for contracts in
+        // construction, since the code is only stored at the end of the
+        // constructor execution.
+
+        uint256 size;
+        // solhint-disable-next-line no-inline-assembly
+        assembly { size := extcodesize(account) }
+        return size > 0;
     }
 }
