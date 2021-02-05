@@ -26,6 +26,7 @@ contract SLNToken is ERC20, Ownable {
     uint256 public capmax;
 
     function setpool(address _pool) external onlyOwner {
+        require(starpools == address(0), 'only init once');
         starpools = _pool;
     }
 
