@@ -55,7 +55,7 @@ contract WordFundV2 is ERC721, Ownable {
         lpToken = new WordFundV2Asset();
     }
 
-    function setRelatedPool(address _poolAddress, uint256 _poolid) external onlyOwner {
+    function setRelatedPool(address payable _poolAddress, uint256 _poolid) external onlyOwner {
         require(address(poolAddress) == address(0), 'init once only');
 
         IERC20 lpPoolToken;
@@ -249,7 +249,7 @@ contract WordFundV2 is ERC721, Ownable {
     }
 
     // If the user transfers TH to contract, it will revert
-    function pay() public payable {
+    receive() external payable {
         revert();
     }
 }

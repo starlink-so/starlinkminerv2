@@ -42,7 +42,7 @@ contract SLNToken is ERC20, Ownable {
     }
 
     // If the user transfers TH to contract, it will revert
-    function pay() public payable {
+    receive() external payable {
         revert();
     }
 }

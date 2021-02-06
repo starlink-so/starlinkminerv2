@@ -175,7 +175,7 @@ contract StarPoolsV2 is Ownable {
     }
 
     // Return reward per block
-    function getBlockReward(uint256 _blockCount, uint256 _rewardPerBlock, uint256 _reductionCounter) public view returns (uint256) {
+    function getBlockReward(uint256 _blockCount, uint256 _rewardPerBlock, uint256 _reductionCounter) internal view returns (uint256) {
         uint256 reward = _blockCount.mul(_rewardPerBlock);
         if (_reductionCounter == 0) {
             return reward;
@@ -251,7 +251,7 @@ contract StarPoolsV2 is Ownable {
         UserInfo storage user = userInfo[_pid][msg.sender];
         if (user.amount > 0) {
             user.rewardRemain = pendingRewards(_pid, msg.sender);
-            user.rewardDebt = 0;
+            // user.rewardDebt = 0;
         }
         if(_amount > 0) {
             pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
@@ -282,12 +282,14 @@ contract StarPoolsV2 is Ownable {
     function claimAll(uint256 _pid) external returns(uint256 value) {
         updatePool(_pid);
         value = pendingRewards(_pid, msg.sender);
-        require(value >= 0, "claim: not good");
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
-        user.rewardRemain = 0;
-        safeSlnTransfer(msg.sender, value);
-        user.rewardDebt = totalRewards(pool, user);
+        // require(value >= 0, "claim: not good");
+        if (value > 0) {
+            PoolInfo storage pool = poolInfo[_pid];
+            UserInfo storage user = userInfo[_pid][msg.sender];
+            user.rewardRemain = 0;
+            safeSlnTransfer(msg.sender, value);
+            user.rewardDebt = totalRewards(pool, user);
+        }
         emit Claim(msg.sender, _pid, value);
     }
 
@@ -297,8 +299,8 @@ contract StarPoolsV2 is Ownable {
         UserInfo storage user = userInfo[_pid][msg.sender];
         uint256 amount = user.amount;
         user.amount = 0;
-        user.rewardDebt = 0;
-        user.rewardRemain = 0;
+        // user.rewardDebt = 0;
+        // user.rewardRemain = 0;
         pool.totalAmount = pool.totalAmount.sub(amount);
         pool.lpToken.safeTransfer(address(msg.sender), amount);
         emit EmergencyWithdraw(msg.sender, _pid, amount);
@@ -327,7 +329,7 @@ contract StarPoolsV2 is Ownable {
     }
 
     // If the user transfers TH to contract, it will revert
-    function pay() public payable {
+    receive() external payable {
         revert();
     }
 }
