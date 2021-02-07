@@ -32,7 +32,7 @@ contract SLNv1Swap {
         ending = _ending;
     }
 
-    function allowance(address _account) public returns (uint256 value) {
+    function allowance(address _account) public view returns (uint256 value) {
         value = snap.holders(_account).sub(swapAmount[_account]);
     }
 
@@ -41,8 +41,8 @@ contract SLNv1Swap {
         require(!isContract(msg.sender), 'not call from contract');
 
         uint256 max_value = allowance(msg.sender);
+        require(_amount <= max_value, 'not more allowance');
         swapAmount[msg.sender] = swapAmount[msg.sender].add(_amount);
-        require(swapAmount[msg.sender] <= max_value, 'not more allowance');
 
         if(swapAmount[msg.sender] == 0) {
             totalAccounts = totalAccounts.add(1);
