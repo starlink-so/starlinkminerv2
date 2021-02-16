@@ -36,6 +36,9 @@ contract WordFundV2 is ERC721, Ownable {
     uint256 public biddingPeriod = (4 hours);
     uint256 public lockingPeriod = (15 days) + (4 hours);
 
+    uint256 public bidingFee = 10e18;
+    address public feeGather;
+
     StarPoolsV2 public poolAddress;
     WordFundV2Asset public lpToken;
     IERC20 public colToken;
@@ -78,7 +81,15 @@ contract WordFundV2 is ERC721, Ownable {
 
     function setLockingPeriod(uint256 _lockingPeriod) external onlyOwner {
         lockingPeriod = _lockingPeriod;
-    }    
+    }
+
+    function setBiddingFeeValue(uint256 _feeValue) external onlyOwner {
+        bidingFee = _feeValue;
+    }
+    
+    function setBiddingFeeGather(address _feeGather) external onlyOwner {
+        feeGather = _feeGather;
+    }
 
     function wordsLength() external view returns (uint256) {
         return words.length;
@@ -108,7 +119,7 @@ contract WordFundV2 is ERC721, Ownable {
         require(words[_wordid].lastBiddingTime == 0 ||
                 now - words[_wordid].lastBiddingTime < biddingPeriod,
                 "not in bidding period");
-        require(_value > words[_wordid].amount && _value >= reservePrice, 'value to low');
+        require(_value > words[_wordid].amount.add(bidingFee) && _value >= reservePrice.add(bidingFee), 'value to low');
 
         if(words[_wordid].owner != address(0)) {
             // release previous biding, claimAndReleaseTo has owner call updatePool()
@@ -119,6 +130,11 @@ contract WordFundV2 is ERC721, Ownable {
 
         // purchase from wallet
         colToken.safeTransferFrom(msg.sender, address(this), _value);
+
+        if(feeGather != address(0)) {
+            _value = _value.sub(bidingFee);
+            colToken.safeTransfer(feeGather, bidingFee);
+        }
 
         lpToken.mint(address(this), _value);
         poolAddress.deposit(poolId, _value);
