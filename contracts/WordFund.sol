@@ -191,6 +191,11 @@ contract WordFundV2 is ERC721, Ownable {
         require( owner == msg.sender || 
                 ( owner == address(this) && words[_wordid].owner == msg.sender),
                 'ntf not yours');
+        require(now - words[_wordid].lastBiddingTime > lockingPeriod,
+                "in locking period");
+        if(owner == msg.sender) {
+            _transfer(msg.sender, address(this), _wordid);
+        }
         release2new(_wordid, msg.sender);
     }
 
@@ -243,6 +248,9 @@ contract WordFundV2 is ERC721, Ownable {
 
     function claimTo(uint256 _wordid, address _to) internal {
         uint256 rewardsValue = pendingRewards(_wordid);
+        if(rewardsValue == 0) {
+            return ;
+        }
 
         words[_wordid].rewardRemain = 0;
         words[_wordid].rewardDebt = totalRewards(_wordid);
