@@ -33,8 +33,8 @@ contract WordFundV2 is ERC721, Ownable {
 
     worddata[] public words;  // Word Data List
     
-    uint256 public biddingPeriod = (4 hours);
-    uint256 public lockingPeriod = (15 days) + (4 hours);
+    uint256 public biddingPeriod = (1 hours);
+    uint256 public lockingPeriod = (15 days) + (1 hours);
 
     uint256 public bidingFee = 10e18;
     address public feeGather;
@@ -89,6 +89,10 @@ contract WordFundV2 is ERC721, Ownable {
     
     function setBiddingFeeGather(address _feeGather) external onlyOwner {
         feeGather = _feeGather;
+    }
+
+    function setBaseURI(string memory baseURI_) external onlyOwner {
+        _setBaseURI(baseURI_);
     }
 
     function wordsLength() external view returns (uint256) {
@@ -208,7 +212,7 @@ contract WordFundV2 is ERC721, Ownable {
         words[_wordid].amount = 0;
         words[_wordid].lastBiddingTime = 0;
         words[_wordid].rewardDebt = 0;
-        words[_wordid].rewardRemain = 0;
+        // words[_wordid].rewardRemain = 0;
         colToken.safeTransfer(_to, amount);
         totalAmount = totalAmount.sub(amount);
     }
