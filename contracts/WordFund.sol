@@ -212,7 +212,7 @@ contract WordFundV2 is ERC721, Ownable {
         words[_wordid].amount = 0;
         words[_wordid].lastBiddingTime = 0;
         words[_wordid].rewardDebt = 0;
-        // words[_wordid].rewardRemain = 0;
+        words[_wordid].rewardRemain = 0;
         colToken.safeTransfer(_to, amount);
         totalAmount = totalAmount.sub(amount);
     }
